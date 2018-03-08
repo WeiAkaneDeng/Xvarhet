@@ -1,0 +1,17 @@
+Package: Xvarhet
+Type: Package
+Title: X-chromosome Variance Heterogeneity Analysis via a Generalized Levene's Test
+Version: 0.9.0
+Author: Wei Q. Deng
+Maintainer: Wei Q. Deng <deng@utstat.toronto.edu>
+Description: A collection of functions to produce robust quantitative trait variance heterogeneity p-values for X-chromosome SNPs.
+License: GPL (>= 2)
+Encoding: UTF-8
+Imports:
+  methods,
+  ggplot2, 
+  quantreg,
+  stats
+Depends: R (>= 3.4.1)
+LazyData: true
+RoxygenNote: 6.0.1
