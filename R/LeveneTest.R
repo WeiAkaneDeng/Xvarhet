@@ -95,13 +95,8 @@ leveneTests <- function(GENO, SEX, PLINK = FALSE, Y, centre = "median", COV = NU
 
   Lp_3G_F <- anova(lm(resp[SEX == 2] ~ factor(GENO[SEX == 2])))[, c(1, 4, 5)][1, 3]
   Lp_2G_M <- anova(lm(resp[SEX == 1] ~ factor(GENO[SEX == 1])))[, c(1, 4, 5)][1, 3]
-  df_sum <- (anova(lm(resp[SEX == 2] ~ factor(GENO[SEX == 2])))[1, 1] +
-               anova(lm(resp[SEX == 1] ~ factor(GENO[SEX == 1])))[1, 1])
-
-  df_full <- ifelse(sum(table(interaction(GENO, SEX))>0) < df_sum, df_sum + 2,
-                    sum(table(interaction(GENO, SEX))>0))
   Lp_Fisher5 <- pchisq(-2 * (log(Lp_3G_F) + log(Lp_2G_M)),
-                       df = ifelse(df_sum < 3, df_sum + 1, df_full-1), lower.tail = FALSE)
+                       df = 4, lower.tail = FALSE)
 
   }
   }
@@ -124,20 +119,15 @@ leveneTests <- function(GENO, SEX, PLINK = FALSE, Y, centre = "median", COV = NU
 
         Lp_3G_F <- anova(lm(resp[SEX == 0] ~ factor(GENO[SEX == 0])))[, c(1, 4, 5)][1, 3]
         Lp_2G_M <- anova(lm(resp[SEX == 1] ~ factor(GENO[SEX == 1])))[, c(1, 4, 5)][1, 3]
-        df_sum <- (anova(lm(resp[SEX == 0] ~ factor(GENO[SEX == 0])))[1, 1] +
-                     anova(lm(resp[SEX == 1] ~ factor(GENO[SEX == 1])))[1, 1])
-
-        df_full <- ifelse(sum(table(interaction(GENO, SEX))>0) < df_sum, df_sum + 2,
-                          sum(table(interaction(GENO, SEX))>0))
         Lp_Fisher5 <- pchisq(-2 * (log(Lp_3G_F) + log(Lp_2G_M)),
-                             df = ifelse(df_sum < 3, df_sum + 1, df_full-1), lower.tail = FALSE)
+                             df = 4, lower.tail = FALSE)
 
       }
     }
 
 
 PVAL <- c(Lp_3G, Lp_5G, Lp_3G_F, Lp_2G_M, Lp_Fisher5)
-names(PVAL) <- c("Lev3", "Lev5", "LevF", "LevM", "Fisher")
+names(PVAL) <- c("Lev3", "Lev5", "LevFemale", "LevMale", "Fisher")
 return(PVAL)
 }
 }

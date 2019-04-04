@@ -48,7 +48,7 @@
 #'
 #' @author Wei Q. Deng \email{deng@utstat.toronto.edu}
 #'
-
+#' @export
 
 ConceptFigure <- function(RAF, prp_m, length.OUT=500, Yrange = 3,
                           y1_vect = c(0, 1), y2_vect = c(-0.5, 0.5, 1, 1),
