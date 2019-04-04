@@ -1,11 +1,6 @@
 # Xvarhet
-<<<<<<< HEAD
-=======
 
->>>>>>> 5164a6ca50610bb9cb0204d25df126eeb0f6d02e
-Xvarhet
-
-Xvarhet contains a collection of quantitative trait variance heterogeneity tests for X-chromosome SNPs.
+The ``Xvarhet'' R package contains a collection of quantitative trait variance heterogeneity tests for X-chromosome SNPs.
 
 ###Quick Start###
 
