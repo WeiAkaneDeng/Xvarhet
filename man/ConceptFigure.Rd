@@ -4,9 +4,18 @@
 \alias{ConceptFigure}
 \title{Generating Conceptual Sex-Stratified Distributions as Shown in Xvarhet Manuscript}
 \usage{
-ConceptFigure(RAF, prp_m, length.OUT = 500, Yrange = 3, y1_vect = c(0, 1),
-  y2_vect = c(-0.5, 0.5, 1, 1), y3_vect = c(0, 0, 0.8, 1.2),
-  y4_vect = c(-0.5, 0.5, 0.8, 1.2), geno_sd = 0.2, cols = T)
+ConceptFigure(
+  RAF,
+  prp_m,
+  length.OUT = 500,
+  Yrange = 3,
+  y1_vect = c(0, 1),
+  y2_vect = c(-0.5, 0.5, 1, 1),
+  y3_vect = c(0, 0, 0.8, 1.2),
+  y4_vect = c(-0.5, 0.5, 0.8, 1.2),
+  geno_sd = 0.2,
+  cols = T
+)
 }
 \arguments{
 \item{RAF}{a numeric between 0 and 1, the reference allele frequency of the

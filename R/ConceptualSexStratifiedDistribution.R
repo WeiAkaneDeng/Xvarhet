@@ -55,6 +55,8 @@ ConceptFigure <- function(RAF, prp_m, length.OUT=500, Yrange = 3,
                           y3_vect = c(0,0,0.8,1.2), y4_vect = c(-0.5,0.5,0.8,1.2),
                           geno_sd = 0.2, cols = T){
 
+  X <- Y <- SEX <- GENO <- NULL
+
 	Names <- c("Female G = 0", "Female G = 1", "Female G = 2",
 	"Male G = 0","Male G = 2")
 

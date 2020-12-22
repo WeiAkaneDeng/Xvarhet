@@ -4,8 +4,20 @@
 \alias{T1EsimDesign1}
 \title{Type I Error (T1E) Rates under Simulation Design I}
 \usage{
-T1EsimDesign1(Nf, Nm, MAF_F, MAF_M, betaE, betaS, betaSE, nbSim = 100,
-  alpha = 0.05, nbDigits = 3, MisspecX = FALSE, test_type = "ALL")
+T1EsimDesign1(
+  Nf,
+  Nm,
+  MAF_F,
+  MAF_M,
+  betaE,
+  betaS,
+  betaSE,
+  nbSim = 100,
+  alpha = 0.05,
+  nbDigits = 3,
+  MisspecX = FALSE,
+  test_type = "ALL"
+)
 }
 \arguments{
 \item{Nf}{an integer for the number of females in the sample population.}
@@ -33,7 +45,7 @@ mis-specified X-inactivation status, i.e. model generated under X-inactivation
 but tested under absence of X-inactivation.}
 
 \item{test_type}{a character of either "ALL", printing all strategies, or "M1",
-"M2", or "M3" for the 8 stratigies given the mean stage models, or "M3V3.2" printing
+"M2", or "M3" for the 8 stratigies given the mean stage models, or "REC" printing
 only the recommended test.}
 }
 \value{
@@ -50,17 +62,17 @@ We recommend to run the simulation in the background as it might take
 long for more than 500 simulations on a 1.6 GHz Core.
 }
 \examples{
-T1EsimDesign1(Nf=5000, Nm=5000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
-betaS=0.2, betaSE=0, nbSim=5, alpha=0.05, nbDigits = 3, MisspecX =FALSE,
+T1EsimDesign1(Nf=1000, Nm=1000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
+betaS=0.2, betaSE=0, nbSim=100, alpha=0.05, nbDigits = 3, MisspecX =FALSE,
 test_type = "ALL")
 
-T1EsimDesign1(Nf=5000, Nm=5000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
-betaS=0.2, betaSE=0, nbSim=50, alpha=0.05, nbDigits = 3, MisspecX =FALSE,
-test_type = "M3V3.2")
+T1EsimDesign1(Nf=1000, Nm=1000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
+betaS=0.2, betaSE=0, nbSim=100, alpha=0.05, nbDigits = 3, MisspecX =FALSE,
+test_type = "REC")
 
-T1EsimDesign1(Nf=5000, Nm=5000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
-betaS=0.2, betaSE=0, nbSim=100, alpha=0.05, nbDigits = 3, Misspe
-=TRUE,test_type = "ALL") # longer run time with 100 simulations
+T1EsimDesign1(Nf=1000, Nm=2000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
+betaS=0.2, betaSE=0, nbSim=100, alpha=0.05, nbDigits = 3, MisspecX=TRUE,
+test_type = "ALL")
 
 }
 \author{

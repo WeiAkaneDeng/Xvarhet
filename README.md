@@ -4,7 +4,7 @@ The ``Xvarhet'' R package contains a collection of quantitative trait variance h
 
 ###Quick Start###
 
-The current release is: version 0.9.9 See "release" tab.
+The current release is: version 1.0 See "release" tab.
 
 To install our R package "Xvarhet", you can either run in R directly:
 

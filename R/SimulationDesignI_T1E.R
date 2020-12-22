@@ -17,7 +17,7 @@
 #' @param alpha a numerical between 0 and 1 for the significance threshold, the default value is 0.05.
 #' @param nbDigits an integer indicating the number of printed digits for empirical T1E rates.
 #' @param test_type a character of either "ALL", printing all strategies, or "M1",
-#' "M2", or "M3" for the 8 stratigies given the mean stage models, or "M3V3.2" printing
+#' "M2", or "M3" for the 8 stratigies given the mean stage models, or "REC" printing
 #' only the recommended test.
 #' @param MisspecX a logic indicating whether the T1E should be calculated under a
 #' mis-specified X-inactivation status, i.e. model generated under X-inactivation
@@ -25,29 +25,25 @@
 #'
 #' @return a vector of type I error rates of the specified testing strategies.
 #'
-#' @importFrom stats rnorm
-#' @importFrom stats resid
-#' @importFrom stats lm
-#' @importFrom stats complete.cases
-#' @importFrom stats na.exclude
-#' @importFrom stats anova
+#' @import stats
+#'
 #'
 #' @note We recommend to run the simulation in the background as it might take
 #' long for more than 500 simulations on a 1.6 GHz Core.
 #' @export T1EsimDesign1
 #'
 #' @examples
-#' T1EsimDesign1(Nf=5000, Nm=5000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
-#' betaS=0.2, betaSE=0, nbSim=5, alpha=0.05, nbDigits = 3, MisspecX =FALSE,
+#' T1EsimDesign1(Nf=1000, Nm=1000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
+#' betaS=0.2, betaSE=0, nbSim=100, alpha=0.05, nbDigits = 3, MisspecX =FALSE,
 #' test_type = "ALL")
 #'
-#' T1EsimDesign1(Nf=5000, Nm=5000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
-#' betaS=0.2, betaSE=0, nbSim=50, alpha=0.05, nbDigits = 3, MisspecX =FALSE,
-#' test_type = "M3V3.2")
+#' T1EsimDesign1(Nf=1000, Nm=1000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
+#' betaS=0.2, betaSE=0, nbSim=100, alpha=0.05, nbDigits = 3, MisspecX =FALSE,
+#' test_type = "REC")
 #'
-#' T1EsimDesign1(Nf=5000, Nm=5000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
-#' betaS=0.2, betaSE=0, nbSim=100, alpha=0.05, nbDigits = 3, Misspe
-#' =TRUE,test_type = "ALL") # longer run time with 100 simulations
+#' T1EsimDesign1(Nf=1000, Nm=2000, MAF_F=0.2, MAF_M=0.2, betaE=0.1,
+#' betaS=0.2, betaSE=0, nbSim=100, alpha=0.05, nbDigits = 3, MisspecX=TRUE,
+#' test_type = "ALL")
 #'
 #' @author Wei Q. Deng \email{deng@utstat.toronto.edu}
 #'
@@ -78,7 +74,6 @@ T1EsimDesign1 <- function(Nf, Nm, MAF_F, MAF_M, betaE, betaS, betaSE,
     return(c(g11, g16))
   }
 
-
   SEX =c(rep(0, Nf), rep(1, Nm))
 
   female_geno <- c(rep(0, round(Nf*(1-MAF_F)^2)), rep(1, round(Nf*(1-MAF_F)*2* MAF_F)), rep(2, Nf-round(Nf*(1-MAF_F)*2* MAF_F)-round(Nf*(1-MAF_F)^2)))
@@ -94,7 +89,9 @@ T1EsimDesign1 <- function(Nf, Nm, MAF_F, MAF_M, betaE, betaS, betaSE,
     return(pval1)
     }
 
-    All_Pval_Sets <- replicate(nbSim, run_sim(test_type=test_type))
+  compTime <- system.time({
+  suppressWarnings(All_Pval_Sets <- replicate(nbSim, run_sim(test_type=test_type)))
+  })[3]
     typeIerror <- apply(All_Pval_Sets, 1, function(dd) sum(dd < alpha)/length(dd))
 
     out_table <- data.frame("FemaleN" = Nf, "MaleN" = Nm,
@@ -102,5 +99,6 @@ T1EsimDesign1 <- function(Nf, Nm, MAF_F, MAF_M, betaE, betaS, betaSE,
                                        "betaEnvironment" = betaE, "betaSEX" = betaS,
                                        "beta_SE" = betaSE, as.data.frame(t(typeIerror)))
 
+    print(paste(nbSim, "simulations completed in", round(compTime, 2), "seconds"))
  return(out_table)
 }

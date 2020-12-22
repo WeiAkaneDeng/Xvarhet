@@ -4,7 +4,7 @@
 \alias{leveneReg}
 \title{Levene's regression tests for variance homogeneity by SNP genotype}
 \usage{
-leveneReg(GENO, SEX, PLINK = FALSE, Y, COV = NULL, test_type = "ALL")
+leveneReg(GENO, SEX, PLINK = FALSE, Y, COV = NULL, test_type = "REC")
 }
 \arguments{
 \item{GENO}{the genotype of a SNP, must be a vector of 0, 1, 2's indicating the number of
@@ -22,8 +22,8 @@ and 1 for males.}
 \item{COV}{a vector or matrix of covariates that are used to reduce bias due to confounding, such as age.}
 
 \item{test_type}{a character of either "ALL", printing all strategies, or "M1",
-"M2", or "M3" for the 8 stratigies given the mean stage models, or "M3V3.2" printing
-only the recommended test.}
+"M2", or "M3" for the 8 stratigies given the mean stage models, or "REC" printing
+only the recommended tests.}
 }
 \value{
 a vector of Levene's test regression p-values according to the models
@@ -34,8 +34,7 @@ The function takes as input the genotype of a SNP (\code{GENO}), the SEX (\code{
  a quantitative trait (\code{Y}) in a sample population, and possibly additional
  covariates. It should be noted that these variables must be of the same length.
  The function then returns the variance heterogeneity \emph{p}-values using the
- generalized Levene's test. The residual from median is computed using the "fn"
- algorithm, for more details see \code{?rq}.
+ generalized Levene's test. The residual function could alternatively be replaced with the quantile regression quantreg::rq following the "fn" algorithm, for more details see \code{?quantreg::rq}.
 }
 \note{
 We recommend to quantile-normally transform \code{Y} to avoid ‘scale-effect’ where
@@ -45,10 +44,10 @@ the variance values tend to be proportional to mean values when stratified by \c
 N <- 5000
 GENO <- rbinom(N, 2, 0.3)
 sex <- rbinom(N, 1, 0.5)
-y <- rnorm(N)
+Y <- rnorm(N)
 cov <- matrix(rnorm(N*10), ncol=10)
-leveneReg(GENO=GENO, SEX=sex, Y=y, COV=cov, test_type="ALL")
-leveneReg(GENO=GENO, SEX=sex, Y=y, COV=cov, test_type="M3V3.2")
+leveneReg(GENO=GENO, SEX=sex, Y=Y, COV=cov, test_type="ALL")
+leveneReg(GENO=GENO, SEX=sex, Y=Y, COV=cov, test_type="REC")
 
 }
 \author{

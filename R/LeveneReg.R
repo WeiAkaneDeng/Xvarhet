@@ -4,8 +4,7 @@
 #'  a quantitative trait (\code{Y}) in a sample population, and possibly additional
 #'  covariates. It should be noted that these variables must be of the same length.
 #'  The function then returns the variance heterogeneity \emph{p}-values using the
-#'  generalized Levene's test. The residual from median is computed using the "fn"
-#'  algorithm, for more details see \code{?rq}.
+#'  generalized Levene's test. The residual function could alternatively be replaced with the quantile regression quantreg::rq following the "fn" algorithm, for more details see \code{?quantreg::rq}.
 #'
 #'
 #' @param GENO the genotype of a SNP, must be a vector of 0, 1, 2's indicating the number of
@@ -21,13 +20,9 @@
 #' "M2", or "M3" for the 8 stratigies given the mean stage models, or "REC" printing
 #' only the recommended tests.
 #'
-#' @importFrom quantreg rq
-#' @importFrom methods is
-#' @importFrom stats resid
-#' @importFrom stats lm
-#' @importFrom stats complete.cases
-#' @importFrom stats na.exclude
-#' @importFrom stats anova
+#' @import stats
+#' @import quantreg
+#' @import methods
 #'
 #' @return a vector of Levene's test regression p-values according to the models
 #' specified.
@@ -39,10 +34,10 @@
 #' N <- 5000
 #' GENO <- rbinom(N, 2, 0.3)
 #' sex <- rbinom(N, 1, 0.5)
-#' y <- rnorm(N)
+#' Y <- rnorm(N)
 #' cov <- matrix(rnorm(N*10), ncol=10)
-#' leveneReg(GENO=GENO, SEX=sex, Y=y, COV=cov, test_type="ALL")
-#' leveneReg(GENO=GENO, SEX=sex, Y=y, COV=cov, test_type="M3V3.2")
+#' leveneReg(GENO=GENO, SEX=sex, Y=Y, COV=cov, test_type="ALL")
+#' leveneReg(GENO=GENO, SEX=sex, Y=Y, COV=cov, test_type="REC")
 #'
 #' @author Wei Q. Deng \email{deng@utstat.toronto.edu}
 #'
@@ -66,6 +61,11 @@ leveneReg <- function(GENO, SEX, PLINK = FALSE, Y, COV = NULL, test_type = "REC"
 
   if (!is.null(COV)){
     Y <- resid(lm(Y ~ COV, na.action = na.exclude))
+  }
+
+
+  if (class(PLINK)!="logical"){
+  warning("PLINK only takes arguments TRUE or FALSE, analysis will be completed ignoring this input value (assuming SEX=0 for females and SEX=1 for males)")
   }
 
   if (PLINK){
@@ -105,16 +105,16 @@ leveneReg <- function(GENO, SEX, PLINK = FALSE, Y, COV = NULL, test_type = "REC"
   if (test_type == "ALL"){
 
     #res_GENO  <- try(as.numeric(resid(quantreg::rq(Y~GENO,na.action=na.exclude, method="fn"))));
-	res_geno  <- try(as.numeric(resid(quantreg::rq(y~GENO,na.action=na.exclude, method="pfn"))));
+	 res_geno  <- try(as.numeric(resid(quantreg::rq(Y~GENO,na.action=na.exclude, method="pfn"))));
 
     #res_GENO_Sex <- try(as.numeric(resid(quantreg::rq(Y~GENO+SEX,na.action=na.exclude, method="fn"))));
-    res_geno_Sex <- try(as.numeric(resid(quantreg::rq(y~GENO+SEX,na.action=na.exclude, method="pfn"))));
+    res_geno_Sex <- try(as.numeric(resid(quantreg::rq(Y~GENO+SEX,na.action=na.exclude, method="pfn"))));
 
     #res_GENO_sexInt <- try(as.numeric(resid(quantreg::rq(Y~GENO*SEX,na.action=na.exclude, method="fn"))));
-	res_geno_sexInt <- try(as.numeric(resid(quantreg::rq(y~GENO*SEX,na.action=na.exclude, method="pfn"))));
+	res_geno_sexInt <- try(as.numeric(resid(quantreg::rq(Y~GENO*SEX,na.action=na.exclude, method="pfn"))));
 
 
-	VAR <- tapply(y, SEX, sd)
+	VAR <- tapply(Y, SEX, sd)
 	w <- ifelse(SEX == as.numeric(names(VAR)[1]), VAR[1], VAR[2])
 
 	r1_geno <- res_geno/w
@@ -144,7 +144,7 @@ leveneReg <- function(GENO, SEX, PLINK = FALSE, Y, COV = NULL, test_type = "REC"
 
     }
 
-    if (methods::is(res_geno_Sex, "try-error")){
+     if (methods::is(res_geno_Sex, "try-error")){
 
       wModel2_G <- rep(NA, 3)
       wModel2_2df <- NA
@@ -167,7 +167,7 @@ leveneReg <- function(GENO, SEX, PLINK = FALSE, Y, COV = NULL, test_type = "REC"
 
     }
 
-    if (methods::is(res_geno_sexInt, "try-error")){
+     if (methods::is(res_geno_sexInt, "try-error")){
 
       wModel3_G <- rep(NA, 3)
       wModel3_2df <- NA
@@ -188,25 +188,22 @@ anova(lm(abs(r1_geno_SexInt)~SEX+factor(GENO)+SEX:I(GENO==1)), lm(abs(r1_geno_Se
 
     }
 
-
-
     PVAL <- c(wModel1_G, wModel1_2df, wModel1_G_Dummy, wModel2_G, wModel2_2df, wModel2_G_Dummy, wModel3_G, wModel3_2df, wModel3_G_Dummy)
 
     names(PVAL) <- c(paste("wM1", c("V1", "V2", "V3"), sep=""), "wM1V3.2", paste("wM1", c("VNA1", "VNA2", "VNA3.2"), sep=""), "wM1VNA3.3", paste("wM2", c("V1", "V2", "V3"), sep=""), "wM2V3.2", paste("W_M2", c("VNA1", "VNA2", "VNA3.2"), sep=""), "wM2VNA3.3", paste("wM3", c("V1", "V2", "V3"), sep=""), "wM3V3.2", paste("wM3", c("VNA1", "VNA2", "VNA3.2"), sep=""), "wM3VNA3.3")
 
+
   } else if (test_type == "M1") {
 
-   
     #res_GENO  <- try(as.numeric(resid(quantreg::rq(Y~GENO,na.action=na.exclude, method="fn"))));
-	res_geno  <- try(as.numeric(resid(quantreg::rq(y~GENO,na.action=na.exclude, method="pfn"))));
+	res_geno  <- try(as.numeric(resid(quantreg::rq(Y~GENO,na.action=na.exclude, method="fn"))));
 
-    
-	VAR <- tapply(y, SEX, sd)
+	VAR <- tapply(Y, SEX, sd)
 	w <- ifelse(SEX == as.numeric(names(VAR)[1]), VAR[1], VAR[2])
 
 	r1_geno <- res_geno/w
 
-     if (methods::is(res_geno, "try-error")){
+    if (methods::is(res_geno, "try-error")){
 
       wModel1_G <- rep(NA, 3)
       wModel1_2df <- NA
@@ -225,23 +222,20 @@ anova(lm(abs(r1_geno_SexInt)~SEX+factor(GENO)+SEX:I(GENO==1)), lm(abs(r1_geno_Se
 	anova(lm(abs(r1_geno)~SEX*factor(GENO)), lm(abs(r1_geno)~SEX+SEX:I(GENO==1)))$Pr[2],
 	anova(lm(abs(r1_geno)~SEX*factor(GENO)), lm(abs(r1_geno)~SEX))$Pr[2])
 
-
-
     PVAL <- c(wModel1_G, wModel1_2df, wModel1_G_Dummy)
     names(PVAL) <- c(paste("wM1", c("V1", "V2", "V3"), sep=""), "wM1V3.2", paste("wM1", c("VNA1", "VNA2", "VNA3.2"), sep=""), "wM1VNA3.3")
 
-  } else if (test_type == "M2") {
+    }
 
+   } else if (test_type == "M2") {
 
 	#res_GENO_Sex <- try(as.numeric(resid(quantreg::rq(Y~GENO+SEX,na.action=na.exclude, method="fn"))));
-    res_geno_Sex <- try(as.numeric(resid(quantreg::rq(y~GENO+SEX,na.action=na.exclude, method="pfn"))));
+    res_geno_Sex <- try(as.numeric(resid(quantreg::rq(Y~GENO+SEX,na.action=na.exclude, method="fn"))));
 
-
-	VAR <- tapply(y, SEX, sd)
+	VAR <- tapply(Y, SEX, sd)
 	w <- ifelse(SEX == as.numeric(names(VAR)[1]), VAR[1], VAR[2])
 
 	r1_geno_Sex <- res_geno_Sex/w
-
 
     if (methods::is(res_geno_Sex, "try-error")){
 
@@ -249,7 +243,7 @@ anova(lm(abs(r1_geno_SexInt)~SEX+factor(GENO)+SEX:I(GENO==1)), lm(abs(r1_geno_Se
       wModel2_2df <- NA
       wModel2_G_Dummy <- rep(NA, 4)
 
-    }else{
+    } else {
 
 
 	wModel2_G <- c(summary(lm(abs(r1_geno_Sex)~GENO))$coef[2,4],
@@ -267,35 +261,34 @@ anova(lm(abs(r1_geno_SexInt)~SEX+factor(GENO)+SEX:I(GENO==1)), lm(abs(r1_geno_Se
     PVAL <- c(wModel2_G, wModel2_2df, wModel2_G_Dummy)
     names(PVAL) <- c(paste("wM2", c("V1", "V2", "V3"), sep=""), "wM2V3.2", paste("W_M2", c("VNA1", "VNA2", "VNA3.2"), sep=""), "wM2VNA3.3")
 
+	}
 
   } else if (test_type == "M3") {
 
 
-    #res_GENO_sexInt <- try(as.numeric(resid(quantreg::rq(Y~GENO*SEX,na.action=na.exclude, method="fn"))));
-	res_geno_sexInt <- try(as.numeric(resid(quantreg::rq(y~GENO*SEX,na.action=na.exclude, method="pfn"))));
+	res_geno_sexInt <- try(as.numeric(resid(quantreg::rq(Y~GENO*SEX,na.action=na.exclude, method="fn"))));
 
-   
+
     if (methods::is(res_geno_sexInt, "try-error")){
 
       wModel3_G <- rep(NA, 3)
       wModel3_2df <- NA
       wModel3_G_Dummy <- rep(NA, 4)
 
-    } else{
+    } else {
 
-	wModel3_G <- c(summary(lm(abs(r1_geno_SexInt)~GENO))$coef[2,4],
-			summary(lm(abs(r1_geno_SexInt)~GENO+SEX))$coef[2,4],
-			summary(lm(abs(r1_geno_SexInt)~GENO*SEX))$coef[2,4]);
+	wModel3_G <- c(summary(lm(abs(res_geno_sexInt)~GENO))$coef[2,4],
+			summary(lm(abs(res_geno_sexInt)~GENO+SEX))$coef[2,4],
+			summary(lm(abs(res_geno_sexInt)~GENO*SEX))$coef[2,4]);
 
-	wModel3_2df <- c(anova(lm(abs(r1_geno_SexInt)~SEX), lm(abs(r1_geno_SexInt)~GENO*SEX))$Pr[2])
+	wModel3_2df <- c(anova(lm(abs(res_geno_sexInt)~SEX), lm(abs(res_geno_sexInt)~GENO*SEX))$Pr[2])
 
-	wModel3_G_Dummy <-  c(anova(lm(abs(r1_geno_SexInt)~factor(GENO)), lm(abs(r1_geno_SexInt)~1))$Pr[2],
-anova(lm(abs(r1_geno_SexInt)~SEX+factor(GENO)), lm(abs(r1_geno_SexInt)~SEX))$Pr[2],
-anova(lm(abs(r1_geno_SexInt)~SEX*factor(GENO)), lm(abs(r1_geno_SexInt)~SEX+SEX:I(GENO==1)))$Pr[2],
-anova(lm(abs(r1_geno_SexInt)~SEX+factor(GENO)+SEX:I(GENO==1)), lm(abs(r1_geno_SexInt)~SEX))$Pr[2])
+	wModel3_G_Dummy <-  c(anova(lm(abs(res_geno_sexInt)~factor(GENO)), lm(abs(r1_geno_SexInt)~1))$Pr[2],
+anova(lm(abs(res_geno_sexInt)~SEX+factor(GENO)), lm(abs(res_geno_sexInt)~SEX))$Pr[2],
+anova(lm(abs(res_geno_sexInt)~SEX*factor(GENO)), lm(abs(res_geno_sexInt)~SEX+SEX:I(GENO==1)))$Pr[2],
+anova(lm(abs(res_geno_sexInt)~SEX+factor(GENO)+SEX:I(GENO==1)), lm(abs(res_geno_sexInt)~SEX))$Pr[2])
 
     }
-
 
     PVAL <- c(wModel3_G, wModel3_2df, wModel3_G_Dummy)
     names(PVAL) <- c(paste("wM3", c("V1", "V2", "V3"), sep=""), "wM3V3.2", paste("wM3", c("VNA1", "VNA2", "VNA3.2"), sep=""), "wM3VNA3.3")
@@ -303,22 +296,24 @@ anova(lm(abs(r1_geno_SexInt)~SEX+factor(GENO)+SEX:I(GENO==1)), lm(abs(r1_geno_Se
 
   } else if (test_type == "REC") {
 
-	res_geno_sexInt <- try(as.numeric(resid(quantreg::rq(y~GENO*SEX,na.action=na.exclude, method="pfn"))));
+	res_geno_sexInt <- try(as.numeric(resid(quantreg::rq(Y~GENO*SEX,na.action=na.exclude, method="fn"))));
 
     if (methods::is(res_geno_sexInt, "try-error")){
 
       wModel3_2df <- NA
       wModel3_G_3df <- NA
 
-    } else{
+      } else{
 
-	wModel3_2df <- c(anova(lm(abs(r1_geno_SexInt)~SEX), lm(abs(r1_geno_SexInt)~GENO*SEX))$Pr[2])
-    wModel3_G_3df <- anova(lm(abs(r1_geno_SexInt)~SEX+factor(GENO)+SEX:I(GENO==1)), lm(abs(r1_geno_SexInt)~SEX))$Pr[2]
+	wModel3_2df <- c(anova(lm(abs(res_geno_sexInt)~SEX), lm(abs(res_geno_sexInt)~GENO*SEX))$Pr[2])
+    wModel3_G_3df <- anova(lm(abs(res_geno_sexInt)~SEX+factor(GENO)+SEX:I(GENO==1)), lm(abs(res_geno_sexInt)~SEX))$Pr[2]
     }
-    PVAL <- c(Model3_2df, wModel3_G_3df)
+    PVAL <- c(wModel3_2df, wModel3_G_3df)
     names(PVAL) <- c("wM3V3.2", "wM3VNA3.3")
 
   }
+
+
 
   return(PVAL)
 }
